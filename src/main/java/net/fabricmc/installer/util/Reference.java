@@ -20,6 +20,7 @@ public class Reference {
 	public static final String PACKAGE = "net/fabricmc";
 	public static final String LOADER_NAME = "fabric-loader-1.8.9";
 	public static final String MAPPINGS_NAME = "intermediary";
-
-	public static String mavenServerUrl = "https://dl.bintray.com/legacy-fabric/Legacy-Fabric-Maven/";
+	
+	public static String mavenServerUrl = "https://maven.fabricmc.net/";
+	public static String fabricApiUrl = "https://www.curseforge.com/minecraft/mc-mods/fabric-api/";
 }
