@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+/*
+ * This file has been modified by Legacy-Fabric to make use of fabric-loader-1.8.9 with
+ * minecraft 1.8.9.
+ */
 package net.fabricmc.installer.client;
 
 import com.google.gson.JsonObject;

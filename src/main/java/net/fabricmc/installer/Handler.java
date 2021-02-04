@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+/*
+ * This file has been modified by Legacy-Fabric:
+ * - Add game version specific loader handling.
+ */
 package net.fabricmc.installer;
 
 import net.fabricmc.installer.util.ArgumentParser;

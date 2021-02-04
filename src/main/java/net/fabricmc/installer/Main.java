@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
+/*
+ * This file has been modified by Legacy-Fabric:
+ * - Use legacy-meta url (https://meta.legacyfabric.net/)
+ * - Use legacy-maven url (https://maven.legacyfabric.net/)
+ */
 package net.fabricmc.installer;
 
 import net.fabricmc.installer.client.ClientHandler;

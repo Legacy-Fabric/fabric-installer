@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+/*
+ * This file has been modified by Legacy-Fabric to allow fetching fabric loader names.
+ */
 package net.fabricmc.installer.util;
 
 import com.google.gson.reflect.TypeToken;
