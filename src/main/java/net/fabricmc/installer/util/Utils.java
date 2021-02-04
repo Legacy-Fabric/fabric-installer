@@ -109,8 +109,10 @@ public class Utils {
 		}
 	}
 
-	public static MinecraftLaunchJson getLaunchMeta(String loaderVersion) throws IOException {
-		String url = String.format("%s/%s/%s/%s/%3$s-%4$s.json", Reference.mavenServerUrl, Reference.PACKAGE, Reference.LOADER_NAME, loaderVersion);
+	public static MinecraftLaunchJson getLaunchMeta(String loaderVersion, String gameVersion) throws IOException {
+		String maven = gameVersion.equals("1.8.9") ? Reference.legacyMavenServerUrl : Reference.mavenServerUrl;
+		String loader = gameVersion.equals("1.8.9") ? Reference.LEGACY_LOADER_NAME : Reference.LOADER_NAME;
+		String url = String.format("%s/%s/%s/%s/%3$s-%4$s.json", maven, Reference.PACKAGE, loader, loaderVersion);
 		String fabricInstallMeta = Utils.readTextFile(new URL(url));
 		JsonObject installMeta = Utils.GSON.fromJson(fabricInstallMeta, JsonObject.class);
 		return new MinecraftLaunchJson(installMeta);
@@ -135,5 +137,5 @@ public class Utils {
 		}
 		return "TNT"; // Fallback to TNT icon if we cant load Fabric icon.
 	}
-
+	
 }

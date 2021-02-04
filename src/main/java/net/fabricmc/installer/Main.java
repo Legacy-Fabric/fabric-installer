@@ -20,7 +20,7 @@ import net.fabricmc.installer.client.ClientHandler;
 import net.fabricmc.installer.server.ServerHandler;
 import net.fabricmc.installer.util.ArgumentParser;
 import net.fabricmc.installer.util.CrashDialog;
-import net.fabricmc.installer.util.LoaderVersionHandler;
+import net.fabricmc.installer.util.MetaHandler;
 import net.fabricmc.installer.util.Reference;
 
 import javax.swing.*;
@@ -35,7 +35,8 @@ import java.util.logging.Logger;
 
 public class Main {
 
-	public static LoaderVersionHandler LOADER_META;
+	public static MetaHandler GAME_VERSION_META;
+	public static MetaHandler LOADER_META;
 
 	//TODO is gui the best name for this?
 	public static final List<Handler> HANDLERS = new ArrayList<>();
@@ -66,10 +67,11 @@ public class Main {
 		setDebugLevel(Level.SEVERE);
 
 		//Can be used if you wish to re-host or provide custom versions. Ensure you include the trailing /
-		argumentParser.ifPresent("mavenurl", s -> Reference.mavenServerUrl = s);
-		final String mavenUrl = argumentParser.getOrDefault("mavenUrl", () -> "https://dl.bintray.com/legacy-fabric/Legacy-Fabric-Maven/");
+		argumentParser.ifPresent("mavenurl", s -> Reference.legacyMavenServerUrl = s);
+		final String metaUrl = argumentParser.getOrDefault("metaurl", () -> "https://meta.legacyfabric.net/");
 
-		LOADER_META = new LoaderVersionHandler(mavenUrl + "net/fabricmc/fabric-loader-1.8.9/maven-metadata.xml");
+		GAME_VERSION_META = new MetaHandler(metaUrl + "v2/versions/game");
+		LOADER_META = new MetaHandler(metaUrl + "v2/versions/loader");
 
 		//Default to the help command in a headless environment
 		if(GraphicsEnvironment.isHeadless() && command == null){
@@ -88,8 +90,9 @@ public class Main {
 			HANDLERS.forEach(handler -> System.out.printf("%s %s\n", handler.name().toLowerCase(), handler.cliHelp()));
 
 			LOADER_META.load();
+			GAME_VERSION_META.load();
 
-			System.out.printf("\nLatest Version: %s\nLatest Loader: %s\n", "1.8.9", Main.LOADER_META.getLatestVersion());
+			System.out.printf("\nLatest Version: %s\nLatest Loader: %s\n", GAME_VERSION_META.getLatestVersion(argumentParser.has("snapshot")).getVersion(), Main.LOADER_META.getLatestVersion(false).getVersion());
 		} else {
 			for (Handler handler : HANDLERS) {
 				if (command.equalsIgnoreCase(handler.name())) {

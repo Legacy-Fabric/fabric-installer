@@ -57,11 +57,13 @@ public class ServerInstaller {
 		}
 
 		progress.updateProgress(Utils.BUNDLE.getString("progress.download.libraries"));
-		MinecraftLaunchJson meta = Utils.getLaunchMeta(loaderVersion);
+		MinecraftLaunchJson meta = Utils.getLaunchMeta(loaderVersion, gameVersion);
 
 		//We add fabric-loader as a lib so it can be downloaded and loaded in the same way as the other libs
-		meta.libraries.add(new MinecraftLaunchJson.Library("net.fabricmc:fabric-loader-1.8.9:" + loaderVersion, Reference.mavenServerUrl));
-		meta.libraries.add(new MinecraftLaunchJson.Library(Reference.PACKAGE.replaceAll("/", ".") + ":" + Reference.MAPPINGS_NAME + ":" + gameVersion, Reference.mavenServerUrl));
+		String loader = gameVersion.equals("1.8.9") ? "net.fabricmc:fabric-loader-1.8.9:" : "net.fabricmc:fabric-loader:";
+		String maven = gameVersion.equals("1.8.9") ? Reference.legacyMavenServerUrl : Reference.mavenServerUrl;
+		meta.libraries.add(new MinecraftLaunchJson.Library(loader + loaderVersion, maven));
+		meta.libraries.add(new MinecraftLaunchJson.Library(Reference.PACKAGE.replaceAll("/", ".") + ":" + Reference.MAPPINGS_NAME + ":" + gameVersion, Reference.legacyMavenServerUrl));
 
 		List<File> libraryFiles = new ArrayList<>();
 

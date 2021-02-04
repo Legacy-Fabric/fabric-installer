@@ -20,21 +20,24 @@ import net.fabricmc.installer.util.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.Ref;
 
 public class ClientInstaller {
 
 	public static String install(File mcDir, String gameVersion, String loaderVersion, InstallerProgress progress) throws IOException {
 		System.out.println("Installing " + gameVersion + " with fabric " + loaderVersion);
+		
+		String loader = gameVersion.equals("1.8.9") ? Reference.LEGACY_LOADER_NAME : Reference.LOADER_NAME;
+		String profileName = String.format("%s-%s-%s", loader, loaderVersion, gameVersion);
 
-		String profileName = String.format("%s-%s-%s", Reference.LOADER_NAME, loaderVersion, gameVersion);
-
-		MinecraftLaunchJson launchJson = Utils.getLaunchMeta(loaderVersion);
+		MinecraftLaunchJson launchJson = Utils.getLaunchMeta(loaderVersion, gameVersion);
 		launchJson.id = profileName;
 		launchJson.inheritsFrom = gameVersion;
 
 		//Adds loader and the mappings
-		launchJson.libraries.add(new MinecraftLaunchJson.Library(Reference.PACKAGE.replaceAll("/", ".") + ":" + Reference.MAPPINGS_NAME + ":" + gameVersion, Reference.mavenServerUrl));
-		launchJson.libraries.add(new MinecraftLaunchJson.Library(Reference.PACKAGE.replaceAll("/", ".") + ":" + Reference.LOADER_NAME + ":" + loaderVersion, Reference.mavenServerUrl));
+		String maven = gameVersion.equals("1.8.9") ? Reference.legacyMavenServerUrl : Reference.mavenServerUrl;
+		launchJson.libraries.add(new MinecraftLaunchJson.Library(Reference.PACKAGE.replaceAll("/", ".") + ":" + Reference.MAPPINGS_NAME + ":" + gameVersion, Reference.legacyMavenServerUrl));
+		launchJson.libraries.add(new MinecraftLaunchJson.Library(Reference.PACKAGE.replaceAll("/", ".") + ":" + loader + ":" + loaderVersion, maven));
 
 		File versionsDir = new File(mcDir, "versions");
 		File profileDir = new File(versionsDir, profileName);

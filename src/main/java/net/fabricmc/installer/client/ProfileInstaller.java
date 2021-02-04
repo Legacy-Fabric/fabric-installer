@@ -38,7 +38,8 @@ public class ProfileInstaller {
 		String json = Utils.readFile(launcherProfiles);
 		JsonObject jsonObject = Utils.GSON.fromJson(json, JsonObject.class);
 		JsonObject profiles = jsonObject.getAsJsonObject("profiles");
-		String profileName = Reference.LOADER_NAME;
+		String loader = gameVersion.equals("1.8.9") ? Reference.LEGACY_LOADER_NAME : Reference.LOADER_NAME;
+		String profileName = loader + "-" + gameVersion;
 
 		JsonObject profile;
 		if (profiles.has(profileName)) {
