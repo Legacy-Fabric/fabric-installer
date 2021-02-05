@@ -1,8 +1,47 @@
 Fabric installer
-Copyright 2021 LegacyFabric
+    Copyright 2021 LegacyFabric
+    https://legacyfabric.net/
 
 This product includes software originally developed at
 FabricMC. (https://fabricmc.net/)
 
 Portions of this software are modified by the
 LegacyFabric organization. (https://legacyfabric.net/)
+
+net/fabricmc/installer/Main.java
+    Copyright (c) 2021 LegacyFabric
+    Licensed under the Apache License, Version 2.0 (the "License");
+    https://github.com/Legacy-Fabric/fabric-installer/tree/master/src/main/java/net/fabricmc/installer/Main.java
+    Modifications: - Use legacy-meta url (https://meta.legacyfabric.net/)
+                   - Use legacy-maven url (https://maven.legacyfabric.net/)
+
+net/fabricmc/installer/Handler.java
+    Copyright (c) 2021 LegacyFabric
+    Licensed under the Apache License, Version 2.0 (the "License");
+    https://github.com/Legacy-Fabric/fabric-installer/tree/master/src/main/java/net/fabricmc/installer/Handler.java
+    Modifications: Add game version specific loader handling.
+
+net/fabricmc/installer/client/
+    Copyright (c) 2021 LegacyFabric
+    Licensed under the Apache License, Version 2.0 (the "License");
+    https://github.com/Legacy-Fabric/fabric-installer/tree/master/src/main/java/net/fabricmc/installer/client/
+    Files: ClientInstaller.java , ProfileInstaller.java
+    Modifications: Make use of "fabric-loader-1.8.9" with minecraft 1.8.9 and use legacy-maven urls.
+
+net/fabricmc/installer/server/
+    Copyright (c) 2021 LegacyFabric
+    Licensed under the Apache License, Version 2.0 (the "License");
+    https://github.com/Legacy-Fabric/fabric-installer/tree/master/src/main/java/net/fabricmc/installer/server/
+    Files: ServerInstaller.java
+    Modifications: Make use of "fabric-loader-1.8.9" with minecraft 1.8.9 and use legacy-maven urls.
+
+net/fabricmc/installer/util/
+    Copyright (c) 2021 LegacyFabric
+    Licensed under the Apache License, Version 2.0 (the "License");
+    https://github.com/Legacy-Fabric/fabric-installer/tree/master/src/main/java/net/fabricmc/installer/util/
+    Files: MetaHandler.java, Reference.java, Utils.java
+    Modifications: - Get fabric-loader name to check if its fabric-loader-1.8.9 or fabric-loader. (MetaHandler.java)
+                   - Add custom loader (fabric-loader-1.8.9) name. (Reference.java)
+                   - Add legacy maven url. (Reference.java)
+                   - Change fabric-api url to legacy-fabric-api url. (Reference.java)
+                   - Make use of "fabric-loader-1.8.9" with minecraft 1.8.9 and use legacy-maven urls. (Utils.java)

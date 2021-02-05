@@ -14,12 +14,6 @@
  * limitations under the License.
  */
 
-/*
- * This file has been modified by Legacy-Fabric:
- * - Add custom loader (fabric-loader-1.8.9) name.
- * - Add legacy maven url.
- * - Change fabric-api url to legacy-fabric-api url.
- */
 package net.fabricmc.installer.util;
 
 public class Reference {
