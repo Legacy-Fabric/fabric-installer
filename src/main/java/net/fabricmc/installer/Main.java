@@ -67,7 +67,7 @@ public class Main {
 		setDebugLevel(Level.SEVERE);
 
 		//Can be used if you wish to re-host or provide custom versions. Ensure you include the trailing /
-		argumentParser.ifPresent("mavenurl", s -> Reference.legacyMavenServerUrl = s);
+		argumentParser.ifPresent("mavenurl", s -> Reference.mavenServerUrl = s);
 		final String metaUrl = argumentParser.getOrDefault("metaurl", () -> "https://meta.legacyfabric.net/");
 
 		GAME_VERSION_META = new MetaHandler(metaUrl + "v2/versions/game");
