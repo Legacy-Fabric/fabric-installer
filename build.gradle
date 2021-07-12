@@ -94,6 +94,10 @@ if (ENV.SIGNING_SERVER) {
 }
 
 license {
+	matching(includes: ['**/Handler.java', '**/ClientInstaller.java', '**/ProfileInstaller.java', '**/MetaHandler.java',
+						'**/Reference.java']) {
+		header = rootProject.file("LFQ-HEADER")
+	}
 	header rootProject.file("HEADER")
 	include "**/*.java"
 }
