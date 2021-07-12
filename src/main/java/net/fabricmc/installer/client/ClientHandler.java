@@ -16,19 +16,26 @@
 
 package net.fabricmc.installer.client;
 
+import java.awt.Desktop;
+import java.io.FileNotFoundException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.MessageFormat;
+
+import javax.swing.JCheckBox;
+import javax.swing.JEditorPane;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import javax.swing.event.HyperlinkEvent;
+
 import net.fabricmc.installer.Handler;
 import net.fabricmc.installer.InstallerGui;
 import net.fabricmc.installer.util.ArgumentParser;
 import net.fabricmc.installer.util.InstallerProgress;
 import net.fabricmc.installer.util.Reference;
 import net.fabricmc.installer.util.Utils;
-
-import javax.swing.*;
-import javax.swing.event.HyperlinkEvent;
-import java.awt.*;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.text.MessageFormat;
 
 public class ClientHandler extends Handler {
 
@@ -47,8 +54,8 @@ public class ClientHandler extends Handler {
 		new Thread(() -> {
 			try {
 				updateProgress(new MessageFormat(Utils.BUNDLE.getString("progress.installing")).format(new Object[]{loaderVersion}));
-				File mcPath = new File(installLocation.getText());
-				if (!mcPath.exists()) {
+				Path mcPath = Paths.get(installLocation.getText());
+				if (!Files.exists(mcPath)) {
 					throw new RuntimeException(Utils.BUNDLE.getString("progress.exception.no.launcher.directory"));
 				}
 				String profileName = ClientInstaller.install(mcPath, gameVersion, loaderVersion, this);
@@ -84,24 +91,24 @@ public class ClientHandler extends Handler {
 
 	@Override
 	public void installCli(ArgumentParser args) throws Exception {
-		File file = new File(args.get("dir"));
-		if (!file.exists()) {
-			throw new FileNotFoundException("Launcher directory not found at " + file.getAbsolutePath());
+		Path path = Paths.get(args.getOrDefault("dir", () -> Utils.findDefaultInstallDir().toString()));
+		if (!Files.exists(path)) {
+			throw new FileNotFoundException("Launcher directory not found at " + path.toString());
 		}
 
 		String gameVersion = getGameVersion(args);
 		String loaderVersion = getLoaderVersion(args);
 
-		String profileName = ClientInstaller.install(file, gameVersion, loaderVersion, InstallerProgress.CONSOLE);
+		String profileName = ClientInstaller.install(path, gameVersion, loaderVersion, InstallerProgress.CONSOLE);
 		if (args.has("noprofile")) {
 			return;
 		}
-		ProfileInstaller.setupProfile(file, profileName, gameVersion);
+		ProfileInstaller.setupProfile(path, profileName, gameVersion);
 	}
 
 	@Override
 	public String cliHelp() {
-		return "-dir <install dir, required> -mcversion <minecraft version, default latest> -loader <loader version, default latest>";
+		return "-dir <install dir> -mcversion <minecraft version, default latest> -loader <loader version, default latest>";
 	}
 
 	@Override
@@ -113,7 +120,7 @@ public class ClientHandler extends Handler {
 	public void setupPane2(JPanel pane, InstallerGui installerGui) {
 		addRow(pane, jPanel -> jPanel.add(createProfile = new JCheckBox(Utils.BUNDLE.getString("option.create.profile"), true)));
 
-		installLocation.setText(Utils.findDefaultInstallDir().getAbsolutePath());
+		installLocation.setText(Utils.findDefaultInstallDir().toString());
 	}
 
 }

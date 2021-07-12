@@ -16,16 +16,10 @@
 
 package net.fabricmc.installer.util;
 
-import com.google.gson.reflect.TypeToken;
+import mjson.Json;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.lang.reflect.Type;
 import java.net.URL;
-import java.net.URLConnection;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -41,13 +35,16 @@ public class MetaHandler extends CompletableHandler<List<MetaHandler.GameVersion
 
 	public void load() throws IOException {
 		URL url = new URL(metaUrl);
-		URLConnection conn = url.openConnection();
-		try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
-			String json = reader.lines().collect(Collectors.joining("\n"));
-			Type type = new TypeToken<ArrayList<GameVersion>>() {}.getType();
-			versions = Utils.GSON.fromJson(json, type);
-			complete(versions);
-		}
+
+		Json json = Json.read(Utils.readTextFile(url));
+
+		System.out.println(this.versions);
+		this.versions = json.asJsonList()
+				.stream()
+				.map(jsonMap -> this.metaUrl.equals(Reference.gameVersionMeta) ? new GameVersion(jsonMap) : new LoaderVersion(jsonMap))
+				.collect(Collectors.toList());
+
+		complete(versions);
 	}
 
 	public List<GameVersion> getVersions() {
@@ -64,12 +61,12 @@ public class MetaHandler extends CompletableHandler<List<MetaHandler.GameVersion
 	}
 
 	public static class GameVersion {
-		String name;
 		String version;
 		boolean stable;
 
-		public String getName() {
-			return name;
+		public GameVersion(Json json) {
+			version = json.at("version").asString();
+			stable = json.at("stable").asBoolean();
 		}
 		
 		public String getVersion() {
@@ -78,6 +75,22 @@ public class MetaHandler extends CompletableHandler<List<MetaHandler.GameVersion
 
 		public boolean isStable() {
 			return stable;
+		}
+	}
+
+	public static class LoaderVersion extends GameVersion {
+
+		String name;
+
+		public LoaderVersion(Json json)
+		{
+			super(json);
+			name = json.at("name").asString();
+		}
+
+		public String getName()
+		{
+			return name;
 		}
 	}
 
