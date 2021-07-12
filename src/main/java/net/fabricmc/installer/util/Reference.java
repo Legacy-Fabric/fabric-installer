@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2021 Legacy Fabric/Quilt
  * Copyright (c) 2016, 2017, 2018, 2019 FabricMC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,9 +18,15 @@
 package net.fabricmc.installer.util;
 
 public class Reference {
-	public static final String PACKAGE = "net/fabricmc";
-	public static final String LOADER_NAME = "fabric-loader-1.8.9";
-	public static final String MAPPINGS_NAME = "intermediary";
+	public static final String LOADER_NAME = "fabric-loader";
+	public static final String LEGACY_LOADER_NAME = "fabric-loader-1.8.9";
+	public static String metaServerUrl = "https://meta.legacyfabric.net/";
+	public static String fabricApiUrl = "https://www.curseforge.com/minecraft/mc-mods/legacy-fabric-api/";
 
-	public static String mavenServerUrl = "https://maven.legacyfabric.net/";
+	public static String gameVersionMeta = "https://meta.legacyfabric.net/v2/versions/game";
+	public static String loaderVersionMeta = "https://meta.legacyfabric.net/v2/versions/loader";
+
+	public static String getMetaServerEndpoint(String path) {
+		return metaServerUrl + path;
+	}
 }

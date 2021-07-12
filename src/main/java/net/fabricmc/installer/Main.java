@@ -20,40 +20,22 @@ import net.fabricmc.installer.client.ClientHandler;
 import net.fabricmc.installer.server.ServerHandler;
 import net.fabricmc.installer.util.ArgumentParser;
 import net.fabricmc.installer.util.CrashDialog;
-import net.fabricmc.installer.util.LoaderVersionHandler;
+import net.fabricmc.installer.util.MetaHandler;
 import net.fabricmc.installer.util.Reference;
 
-import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.FileHandler;
-import java.util.logging.Level;
-import java.util.logging.LogManager;
-import java.util.logging.Logger;
 
 public class Main {
 
-	public static LoaderVersionHandler LOADER_META;
+	public static MetaHandler GAME_VERSION_META;
+	public static MetaHandler LOADER_META;
 
-	//TODO is gui the best name for this?
 	public static final List<Handler> HANDLERS = new ArrayList<>();
 
 	public static void main(String[] args) throws IOException {
-		String[] versionSplit = System.getProperty("java.version").split("\\.");
-		if (versionSplit.length == 2) { //Only check 1.x versions of java, new versions are formatted liked 12
-			int javaVersionMajor = Integer.parseInt(versionSplit[0]);
-			int javaVersionMinor = Integer.parseInt(versionSplit[1]);
-			if (javaVersionMinor < 8 && javaVersionMajor <= 1) {
-				System.out.println("You are using an outdated version of Java, Fabric will not work! Please update to Java 8 or newer to use Fabric.");
-				if (args.length == 0 || !args[0].equals("nogui")) {
-					JOptionPane.showMessageDialog(null, "You are using an outdated version of Java, Fabric will not work! Please update to Java 8 or newer to use Fabric.", "Java Version Warning", JOptionPane.ERROR_MESSAGE);
-				}
-				return;
-			}
-		}
-
 		System.out.println("Loading Fabric Installer: " + Main.class.getPackage().getImplementationVersion());
 
 		HANDLERS.add(new ClientHandler());
@@ -62,14 +44,11 @@ public class Main {
 		ArgumentParser argumentParser = ArgumentParser.create(args);
 		String command = argumentParser.getCommand().orElse(null);
 
-		//Used to suppress warning from libs
-		setDebugLevel(Level.SEVERE);
-
 		//Can be used if you wish to re-host or provide custom versions. Ensure you include the trailing /
-		argumentParser.ifPresent("mavenurl", s -> Reference.mavenServerUrl = s);
-		final String mavenUrl = argumentParser.getOrDefault("mavenUrl", () -> "https://maven.legacyfabric.net/");
+		argumentParser.ifPresent("metaurl", s -> Reference.metaServerUrl = s);
 
-		LOADER_META = new LoaderVersionHandler(mavenUrl + "net/fabricmc/fabric-loader-1.8.9/maven-metadata.xml");
+		GAME_VERSION_META = new MetaHandler(Reference.getMetaServerEndpoint("v2/versions/game"));
+		LOADER_META = new MetaHandler(Reference.getMetaServerEndpoint("v2/versions/loader"));
 
 		//Default to the help command in a headless environment
 		if(GraphicsEnvironment.isHeadless() && command == null){
@@ -88,8 +67,9 @@ public class Main {
 			HANDLERS.forEach(handler -> System.out.printf("%s %s\n", handler.name().toLowerCase(), handler.cliHelp()));
 
 			LOADER_META.load();
+			GAME_VERSION_META.load();
 
-			System.out.printf("\nLatest Version: %s\nLatest Loader: %s\n", "1.8.9", Main.LOADER_META.getLatestVersion());
+			System.out.printf("\nLatest Version: %s\nLatest Loader: %s\n", GAME_VERSION_META.getLatestVersion(argumentParser.has("snapshot")).getVersion(), Main.LOADER_META.getLatestVersion(false).getVersion());
 		} else {
 			for (Handler handler : HANDLERS) {
 				if (command.equalsIgnoreCase(handler.name())) {
@@ -106,15 +86,4 @@ public class Main {
 		}
 
 	}
-
-	public static void setDebugLevel(Level newLvl) {
-		Logger rootLogger = LogManager.getLogManager().getLogger("");
-		java.util.logging.Handler[] handlers = rootLogger.getHandlers();
-		rootLogger.setLevel(newLvl);
-		for (java.util.logging.Handler h : handlers) {
-			if (h instanceof FileHandler)
-				h.setLevel(newLvl);
-		}
-	}
-
 }

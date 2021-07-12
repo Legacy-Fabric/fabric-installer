@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2021 Legacy Fabric/Quilt
  * Copyright (c) 2016, 2017, 2018, 2019 FabricMC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,15 +17,32 @@
 
 package net.fabricmc.installer;
 
+import java.awt.Color;
+import java.awt.Container;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JEditorPane;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.UIManager;
+
 import net.fabricmc.installer.util.ArgumentParser;
 import net.fabricmc.installer.util.InstallerProgress;
-import net.fabricmc.installer.util.LoaderVersionHandler;
+import net.fabricmc.installer.util.MetaHandler;
 import net.fabricmc.installer.util.Utils;
-
-import javax.swing.*;
-import java.awt.*;
-import java.io.IOException;
-import java.util.function.Consumer;
 
 public abstract class Handler implements InstallerProgress {
 
@@ -35,6 +53,8 @@ public abstract class Handler implements InstallerProgress {
 	public JTextField installLocation;
 	public JButton selectFolderButton;
 	public JLabel statusLabel;
+
+	public JCheckBox snapshotCheckBox;
 
 	private JPanel pane;
 
@@ -60,6 +80,21 @@ public abstract class Handler implements InstallerProgress {
 		addRow(pane, jPanel -> {
 			jPanel.add(new JLabel(Utils.BUNDLE.getString("prompt.game.version")));
 			jPanel.add(gameVersionComboBox = new JComboBox<>());
+			gameVersionComboBox.addActionListener(e -> {
+				if (Main.LOADER_META.isComplete()) {
+					updateLoaderVersions();
+				}
+			});
+			jPanel.add(snapshotCheckBox = new JCheckBox(Utils.BUNDLE.getString("option.show.snapshots")));
+			snapshotCheckBox.setSelected(false);
+			snapshotCheckBox.addActionListener(e -> {
+				if (Main.GAME_VERSION_META.isComplete()) {
+					updateGameVersions();
+				}
+			});
+		});
+
+		Main.GAME_VERSION_META.onComplete(versions -> {
 			updateGameVersions();
 		});
 
@@ -92,63 +127,122 @@ public abstract class Handler implements InstallerProgress {
 			});
 		});
 
+		
 		Main.LOADER_META.onComplete(versions -> {
-			for (int i = 0; i < versions.size(); i++) {
-				String version = versions.get(i);
-				loaderVersionComboBox.addItem(version);
-			}
-			if (loaderVersionComboBox.getItemCount() > 0) loaderVersionComboBox.setSelectedIndex(0);
+			updateLoaderVersions();
 			statusLabel.setText(Utils.BUNDLE.getString("prompt.ready.install"));
 		});
 
 		return pane;
 	}
 
+	private static int compareVersions(String a, String b) {
+		if (a == null) return -1;
+		if (b == null) return 1;
+		if (a.equals(b)) return 0;
+		Pattern pattern = Pattern.compile("^\\d+(\\.\\d+)+");
+		Matcher matcherA = pattern.matcher(a);
+		Matcher matcherB = pattern.matcher(b);
+		if (!matcherA.find() || !matcherB.find()) {
+			throw new IllegalArgumentException("Invalid version");
+		}
+		String[] aParts =  matcherA.group(0).split("\\.");
+		String[] bParts =  matcherB.group(0).split("\\.");
+		for (int i = 0; i < aParts.length || i < bParts.length; i++) {
+			if (i >= aParts.length && !"0".equals(bParts[i])) return -1;
+			if (i >= bParts.length && !"0".equals(aParts[i])) return 1;
+			int cmp = Integer.compare(Integer.parseInt(aParts[i]), Integer.parseInt(bParts[i]));
+			if (cmp != 0) return cmp;
+		}
+		return 0;
+	}
+	
+	private void updateLoaderVersions()
+	{
+		loaderVersionComboBox.removeAllItems();
+		for (MetaHandler.GameVersion version : Main.LOADER_META.getVersions())
+		{
+			boolean guavaLoader = ((MetaHandler.LoaderVersion) version).getName().equals("fabric-loader-1.8.9");
+			String gameVersion = (String) gameVersionComboBox.getSelectedItem();
+			String loaderVersion = version.getVersion();
+			try {
+				// Versions < 1.12 ship Guava 17 so they need the fix
+				if (compareVersions(gameVersion, "1.12") < 0) {
+					if (guavaLoader) {
+						loaderVersionComboBox.addItem(loaderVersion);
+						loaderVersionComboBox.setSelectedItem(version.isStable() ? loaderVersion : 0);
+					}
+					continue;
+				}
+				// 1.12 needs a fix that's implemented since loader 0.11.3
+				if (compareVersions(gameVersion, "1.12.2") <= 0) {
+					if (compareVersions(loaderVersion, "0.11.3") >= 0) {
+						loaderVersionComboBox.addItem(loaderVersion);
+						loaderVersionComboBox.setSelectedItem(version.isStable() ? loaderVersion : 0);
+					}
+					continue;
+				}
+			} catch (IllegalArgumentException e) {
+				e.printStackTrace();
+			}
+			if (!guavaLoader) loaderVersionComboBox.addItem(loaderVersion);
+			loaderVersionComboBox.setSelectedItem(version.isStable() ? loaderVersion : 0);
+		}
+	}
+
 	private void updateGameVersions() {
 		gameVersionComboBox.removeAllItems();
-        gameVersionComboBox.addItem("1.8.9");
+		for (MetaHandler.GameVersion version : Main.GAME_VERSION_META.getVersions()) {
+			if (!snapshotCheckBox.isSelected() && !version.isStable()) {
+				continue;
+			}
+			gameVersionComboBox.addItem(version.getVersion());
+		}
 		gameVersionComboBox.setSelectedIndex(0);
 	}
 
 	@Override
 	public void updateProgress(String text) {
 		statusLabel.setText(text);
-		statusLabel.setForeground(Color.BLACK);
+		statusLabel.setForeground(UIManager.getColor("Label.foreground"));
 	}
 
-	private void appendException(StringBuilder errorMessage, String prefix, String name, Throwable e) {
-		String prefixAppend = "  ";
-
-		errorMessage.append(prefix).append(name).append(": ").append(e.getLocalizedMessage()).append('\n');
-		for (StackTraceElement traceElement : e.getStackTrace()) {
-			errorMessage.append(prefix).append("- ").append(traceElement).append('\n');
-		}
-
-		if (e.getCause() != null) {
-			appendException(errorMessage, prefix + prefixAppend, Utils.BUNDLE.getString("prompt.exception.caused.by"), e.getCause());
-		}
-
-		for (Throwable ec : e.getSuppressed()) {
-			appendException(errorMessage, prefix + prefixAppend, Utils.BUNDLE.getString("prompt.exception.suppressed"), ec);
-		}
+	protected String buildEditorPaneStyle() {
+		JLabel label = new JLabel();
+		Font font = label.getFont();
+		Color color = label.getBackground();
+		return String.format(
+				"font-family:%s;font-weight:%s;font-size:%dpt;background-color: rgb(%d,%d,%d);",
+				font.getFamily(), (font.isBold() ? "bold" : "normal"), font.getSize(), color.getRed(), color.getGreen(), color.getBlue()
+				);
 	}
 
 	@Override
-	public void error(Exception e) {
-		StringBuilder errorMessage = new StringBuilder();
-		appendException(errorMessage, "", Utils.BUNDLE.getString("prompt.exception"), e);
+	public void error(Throwable throwable) {
+		StringWriter sw = new StringWriter(800);
 
-		System.err.println(errorMessage);
+		try (PrintWriter pw = new PrintWriter(sw)) {
+			throwable.printStackTrace(pw);
+		}
+
+		String st = sw.toString().trim();
+		System.err.println(st);
+
+		String html = String.format("<html><body style=\"%s\">%s</body></html>",
+				buildEditorPaneStyle(),
+				st.replace(System.lineSeparator(), "<br>").replace("\t", "&ensp;"));
+		JEditorPane textPane = new JEditorPane("text/html", html);
+		textPane.setEditable(false);
+
+		statusLabel.setText(throwable.getLocalizedMessage());
+		statusLabel.setForeground(Color.RED);
 
 		JOptionPane.showMessageDialog(
 				pane,
-				errorMessage,
+				textPane,
 				Utils.BUNDLE.getString("prompt.exception.occurrence"),
 				JOptionPane.ERROR_MESSAGE
-		);
-
-		statusLabel.setText(e.getLocalizedMessage());
-		statusLabel.setForeground(Color.RED);
+				);
 	}
 
 	protected void addRow(Container parent, Consumer<JPanel> consumer) {
@@ -158,7 +252,15 @@ public abstract class Handler implements InstallerProgress {
 	}
 
 	protected String getGameVersion(ArgumentParser args) {
-		return args.getOrDefault("mcversion", () -> "1.8.9");
+		return args.getOrDefault("mcversion", () -> {
+			System.out.println("Using latest game version");
+			try {
+				Main.GAME_VERSION_META.load();
+			} catch (IOException e) {
+				throw new RuntimeException("Failed to load latest versions", e);
+			}
+			return Main.GAME_VERSION_META.getLatestVersion(args.has("snapshot")).getVersion();
+		});
 	}
 
 	protected String getLoaderVersion(ArgumentParser args) {
@@ -169,7 +271,7 @@ public abstract class Handler implements InstallerProgress {
 			} catch (IOException e) {
 				throw new RuntimeException("Failed to load latest versions", e);
 			}
-			return Main.LOADER_META.getLatestVersion();
+			return Main.LOADER_META.getLatestVersion(false).getVersion();
 		});
 	}
 
