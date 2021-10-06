@@ -14,22 +14,21 @@
  * limitations under the License.
  */
 
-package net.fabricmc.installer.util;
+package net.fabricmc.installer;
 
-public interface InstallerProgress {
-	InstallerProgress CONSOLE = new InstallerProgress() {
-		@Override
-		public void updateProgress(String text) {
-			System.out.println(text);
-		}
+import java.nio.file.Path;
 
-		@Override
-		public void error(Throwable throwable) {
-			throw new RuntimeException(throwable);
-		}
-	};
+public final class LoaderVersion {
+	public final String name;
+	public final Path path;
 
-	void updateProgress(String text);
+	public LoaderVersion(String name) {
+		this.name = name;
+		this.path = null;
+	}
 
-	void error(Throwable throwable);
+	public LoaderVersion(String name, Path path) {
+		this.name = name;
+		this.path = path;
+	}
 }

@@ -14,22 +14,14 @@
  * limitations under the License.
  */
 
-package net.fabricmc.installer.util;
+package net.fabricmc.installer.launcher;
 
-public interface InstallerProgress {
-	InstallerProgress CONSOLE = new InstallerProgress() {
-		@Override
-		public void updateProgress(String text) {
-			System.out.println(text);
+public class MojangLauncherHelperWrapper {
+	public static boolean isMojangLauncherOpen() {
+		if (NativesHelper.loadSafelyIfCompatible()) {
+			return MojangLauncherHelper.isMojangLauncherOpen();
 		}
 
-		@Override
-		public void error(Throwable throwable) {
-			throw new RuntimeException(throwable);
-		}
-	};
-
-	void updateProgress(String text);
-
-	void error(Throwable throwable);
+		return false;
+	}
 }

@@ -25,6 +25,8 @@ public class Reference {
 
 	public static String gameVersionMeta = "https://meta.legacyfabric.net/v2/versions/game";
 	public static String loaderVersionMeta = "https://meta.legacyfabric.net/v2/versions/loader";
+	public static String minecraftLauncherManifest = "https://launchermeta.mojang.com/mc/game/version_manifest_v2.json";
+	public static String experimentalVersionsManifest = "https://maven.fabricmc.net/net/minecraft/experimental_versions.json";
 
 	public static String getMetaServerEndpoint(String path) {
 		return metaServerUrl + path;
