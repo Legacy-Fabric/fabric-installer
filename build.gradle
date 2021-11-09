@@ -10,7 +10,7 @@ plugins {
 
 sourceCompatibility = 1.8
 version = '0.9.0'
-archivesBaseName = "fabric-installer"
+archivesBaseName = "legacy-fabric-installer"
 
 def ENV = System.getenv()
 version = version + (ENV.GITHUB_ACTIONS ? "" : "+local")
@@ -54,7 +54,7 @@ checkstyle {
 
 shadowJar {
 	manifest {
-		attributes 'Implementation-Title': 'FabricInstaller',
+		attributes 'Implementation-Title': 'LegacyFabricInstaller',
 				'Implementation-Version': project.version,
 				'Main-Class': 'net.fabricmc.installer.Main'
 	}
@@ -66,7 +66,7 @@ shadowJar {
 
 task serverJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
 	manifest {
-		attributes 'Implementation-Title': 'FabricInstaller',
+		attributes 'Implementation-Title': 'LegacyFabricInstaller',
 				'Implementation-Version': project.version,
 				'Main-Class': 'net.fabricmc.installer.ServerLauncher'
 	}
