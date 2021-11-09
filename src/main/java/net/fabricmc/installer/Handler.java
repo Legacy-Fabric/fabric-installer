@@ -94,6 +94,9 @@ public abstract class Handler implements InstallerProgress {
 					updateGameVersions();
 				}
 			});
+			gameVersionComboBox.addActionListener(e -> {
+				this.updateLoaderVersions((String) gameVersionComboBox.getSelectedItem());
+			});
 		});
 
 		Main.GAME_VERSION_META.onComplete(versions -> {
@@ -130,6 +133,8 @@ public abstract class Handler implements InstallerProgress {
 		});
 
 		Main.LOADER_META.onComplete(versions -> {
+			loaderVersionComboBox.removeAllItems();
+
 			int stableIndex = -1;
 
 			for (int i = 0; i < versions.size(); i++) {
@@ -152,7 +157,21 @@ public abstract class Handler implements InstallerProgress {
 			statusLabel.setText(Utils.BUNDLE.getString("prompt.ready.install"));
 		});
 
+		this.updateLoaderVersions();
+
 		return pane;
+	}
+
+	private void updateLoaderVersions() {
+		this.updateLoaderVersions("1.8.9");
+	}
+
+	private void updateLoaderVersions(String mcVersion) {
+		try {
+			Main.LOADER_META.load(mcVersion);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private void updateGameVersions() {

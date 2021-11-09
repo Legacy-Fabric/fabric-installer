@@ -35,7 +35,7 @@ public class Main {
 	public static final List<Handler> HANDLERS = new ArrayList<>();
 
 	public static void main(String[] args) throws IOException {
-		System.out.println("Loading Fabric Installer: " + Main.class.getPackage().getImplementationVersion());
+		System.out.println("Loading Legacy Fabric Installer: " + Main.class.getPackage().getImplementationVersion());
 
 		HANDLERS.add(new ClientHandler());
 		HANDLERS.add(new ServerHandler());
@@ -65,8 +65,8 @@ public class Main {
 			System.out.println("help - Opens this menu");
 			HANDLERS.forEach(handler -> System.out.printf("%s %s\n", handler.name().toLowerCase(), handler.cliHelp()));
 
-			LOADER_META.load();
 			GAME_VERSION_META.load();
+			LOADER_META.load();
 
 			System.out.printf("\nLatest Version: %s\nLatest Loader: %s\n", GAME_VERSION_META.getLatestVersion(argumentParser.has("snapshot")).getVersion(), Main.LOADER_META.getLatestVersion(false).getVersion());
 		} else {
