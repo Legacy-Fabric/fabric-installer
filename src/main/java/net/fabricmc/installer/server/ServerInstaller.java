@@ -36,6 +36,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
@@ -66,6 +67,10 @@ public class ServerInstaller {
 		install(dir, loaderVersion, gameVersion, progress, launchJar);
 	}
 
+	private static boolean isOldGuava(String mcVersion) {
+		return Objects.equals(mcVersion, "1.6.4") || Objects.equals(mcVersion, "1.7.10") || Objects.equals(mcVersion, "1.8.9");
+	}
+
 	public static void install(Path dir, LoaderVersion loaderVersion, String gameVersion, InstallerProgress progress, Path launchJar) throws IOException {
 		progress.updateProgress(new MessageFormat(Utils.BUNDLE.getString("progress.installing.server")).format(new Object[]{String.format("%s(%s)", loaderVersion.name, gameVersion)}));
 
@@ -79,17 +84,46 @@ public class ServerInstaller {
 		List<Library> libraries = new ArrayList<>();
 		String mainClassMeta;
 
-		if (loaderVersion.path == null) { // loader jar unavailable, grab everything from meta
-			Json json = Json.read(Utils.readTextFile(new URL(Reference.getMetaServerEndpoint(String.format("v2/versions/loader/%s/%s/server/json", gameVersion, loaderVersion.name)))));
+		boolean legacyLoader = loaderVersion.name.length() > 10;
 
-			for (Json libraryJson : json.at("libraries").asJsonList()) {
+		if (legacyLoader && isOldGuava(gameVersion)) {
+			loaderVersion = new LoaderVersion("0.12.5", loaderVersion.path);
+			legacyLoader = false;
+		}
+
+		if (loaderVersion.path == null) { // loader jar unavailable, grab everything from meta
+			URL downloadUrl;
+			if (legacyLoader) {
+				downloadUrl = new URL(String.format("https://maven.legacyfabric.net/net/fabricmc/fabric-loader-1.8.9/%s/fabric-loader-1.8.9-%s.json", loaderVersion.name, loaderVersion.name));
+			} else {
+				downloadUrl = new URL(String.format("https://maven.fabricmc.net/net/fabricmc/fabric-loader/%s/fabric-loader-%s.json", loaderVersion.name, loaderVersion.name));
+			}
+
+			Json json = Json.read(Utils.readTextFile(downloadUrl));
+
+			libraries.add(new Library(String.format(
+					legacyLoader ? "net.fabricmc:fabric-loader-1.8.9:%s" : "net.fabricmc:fabric-loader:%s", loaderVersion.name),
+					legacyLoader ? "https://maven.legacyfabric.net/" : "https://maven.fabricmc.net/", null));
+			libraries.add(new Library(String.format("net.fabricmc:intermediary:%s", gameVersion), "https://maven.legacyfabric.net/", null));
+
+			for (Json libraryJson : json.at("libraries").at("common").asJsonList()) {
 				libraries.add(new Library(libraryJson));
 			}
 
-			mainClassMeta = json.at("mainClass").asString();
+			for (Json libraryJson : json.at("libraries").at("server").asJsonList()) {
+				libraries.add(new Library(libraryJson));
+			}
+
+			if (isOldGuava(gameVersion)
+			) {
+				libraries.add(new Library("org.apache.logging.log4j:log4j-api:2.8.1", "https://libraries.minecraft.net/", null));
+				libraries.add(new Library("org.apache.logging.log4j:log4j-core:2.8.1", "https://libraries.minecraft.net/", null));
+			}
+
+			mainClassMeta = json.at("mainClass").at("server").asString();
 		} else { // loader jar available, generate library list from it
 			libraries.add(new Library(String.format("net.fabricmc:fabric-loader:%s", loaderVersion.name), null, loaderVersion.path));
-			libraries.add(new Library(String.format("net.fabricmc:intermediary:%s", gameVersion), "https://maven.fabricmc.net/", null));
+			libraries.add(new Library(String.format("net.fabricmc:intermediary:%s", gameVersion), "https://maven.legacyfabric.net/", null));
 
 			try (ZipFile zf = new ZipFile(loaderVersion.path.toFile())) {
 				ZipEntry entry = zf.getEntry("fabric-installer.json");
