@@ -114,8 +114,7 @@ public class ServerInstaller {
 				libraries.add(new Library(libraryJson));
 			}
 
-			if (isOldGuava(gameVersion)
-			) {
+			if (isOldGuava(gameVersion)) {
 				libraries.add(new Library("org.apache.logging.log4j:log4j-api:2.8.1", "https://libraries.minecraft.net/", null));
 				libraries.add(new Library("org.apache.logging.log4j:log4j-core:2.8.1", "https://libraries.minecraft.net/", null));
 			}

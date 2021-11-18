@@ -16,13 +16,21 @@
 
 package net.fabricmc.installer.client;
 
+import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.Objects;
+
+import mjson.Json;
 
 import net.fabricmc.installer.LoaderVersion;
 import net.fabricmc.installer.util.InstallerProgress;
+import net.fabricmc.installer.util.Library;
 import net.fabricmc.installer.util.Reference;
 import net.fabricmc.installer.util.Utils;
 
@@ -52,8 +60,69 @@ public class ClientInstaller {
 		Files.deleteIfExists(dummyJar);
 		Files.createFile(dummyJar);
 
-		URL profileUrl = new URL(Reference.getMetaServerEndpoint(String.format("v2/versions/loader/%s/%s/profile/json", gameVersion, loaderVersion.name)));
-		Utils.downloadFile(profileUrl, profileJson);
+		boolean legacyLoader = loaderVersion.name.length() > 10;
+
+//		URL profileUrl = new URL(Reference.getMetaServerEndpoint(String.format("v2/versions/loader/%s/%s/profile/json", gameVersion, loaderVersion.name)));
+//		Utils.downloadFile(profileUrl, profileJson);
+
+		URL downloadUrl;
+		if (legacyLoader) {
+			downloadUrl = new URL(String.format("https://maven.legacyfabric.net/net/fabricmc/fabric-loader-1.8.9/%s/fabric-loader-1.8.9-%s.json", loaderVersion.name, loaderVersion.name));
+		} else {
+			downloadUrl = new URL(String.format("https://maven.fabricmc.net/net/fabricmc/fabric-loader/%s/fabric-loader-%s.json", loaderVersion.name, loaderVersion.name));
+		}
+
+		Json json = Json.read(Utils.readTextFile(downloadUrl));
+
+		Json libraries = Json.array(
+				Json.object()
+						.set("name", String.format(legacyLoader ? "net.fabricmc:fabric-loader-1.8.9:%s" : "net.fabricmc:fabric-loader:%s", loaderVersion.name))
+						.set("url", legacyLoader ? "https://maven.legacyfabric.net/" : "https://maven.fabricmc.net/"),
+				Json.object()
+						.set("name", String.format("net.fabricmc:intermediary:%s", gameVersion))
+						.set("url", "https://maven.legacyfabric.net/")
+		);
+
+		if (legacyLoader) {
+			libraries.add(
+					Json.object()
+							.set("name", "com.google.guava:guava:21.0")
+							.set("url", "https://maven.fabricmc.net/")
+			);
+		}
+
+		if (!Objects.equals(gameVersion, "1.13.2") && !Objects.equals(gameVersion, "1.12.2")) {
+			libraries.add(
+					Json.object()
+							.set("name", "org.apache.logging.log4j:log4j-api:2.8.1")
+							.set("url", "https://libraries.minecraft.net/")
+			);
+			libraries.add(
+					Json.object()
+							.set("name", "org.apache.logging.log4j:log4j-core:2.8.1")
+							.set("url", "https://libraries.minecraft.net/")
+			);
+		}
+
+		for (Json libraryJson : json.at("libraries").at("common").asJsonList()) {
+			libraries.add(
+					Json.object()
+							.set("name", libraryJson.at("name").asString())
+							.set("url", libraryJson.at("url").asString())
+			);
+		}
+
+		Json versionJson = Json.object()
+				.set("id", profileName)
+				.set("inheritsFrom", gameVersion)
+				.set("type", "release")
+				.set("mainClass", "net.fabricmc.loader.launch.knot.KnotClient")
+				.set("libraries", libraries);
+
+		FileWriter writer = new FileWriter(profileJson.toFile());
+		writer.write(versionJson.toString());
+		writer.close();
+
 
 		progress.updateProgress(Utils.BUNDLE.getString("progress.done"));
 
