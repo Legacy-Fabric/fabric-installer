@@ -25,7 +25,7 @@ import net.fabricmc.installer.client.ClientHandler;
 import net.fabricmc.installer.server.ServerHandler;
 import net.fabricmc.installer.util.ArgumentParser;
 import net.fabricmc.installer.util.CrashDialog;
-import net.fabricmc.installer.util.LoaderVersionHandler;
+import net.fabricmc.installer.util.MetaHandler;
 import net.fabricmc.installer.util.Reference;
 
 public class Main {
@@ -68,7 +68,7 @@ public class Main {
 			GAME_VERSION_META.load();
 			LOADER_META.load();
 
-			System.out.printf("\nLatest Version: %s\nLatest Loader: %s\n", "1.8.9", Main.LOADER_META.getLatestVersion());
+			System.out.printf("\nLatest Version: %s\nLatest Loader: %s\n", Main.GAME_VERSION_META.getLatestVersion(false), Main.LOADER_META.getLatestVersion(false));
 		} else {
 			for (Handler handler : HANDLERS) {
 				if (command.equalsIgnoreCase(handler.name())) {
