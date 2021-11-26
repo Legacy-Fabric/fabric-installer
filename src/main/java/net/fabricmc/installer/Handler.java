@@ -47,7 +47,7 @@ import mjson.Json;
 
 import net.fabricmc.installer.util.ArgumentParser;
 import net.fabricmc.installer.util.InstallerProgress;
-import net.fabricmc.installer.util.MetaHandler;
+import net.fabricmc.installer.util.LoaderVersionHandler;
 import net.fabricmc.installer.util.Utils;
 
 public abstract class Handler implements InstallerProgress {
@@ -60,8 +60,6 @@ public abstract class Handler implements InstallerProgress {
 	public JTextField installLocation;
 	public JButton selectFolderButton;
 	public JLabel statusLabel;
-
-	public JCheckBox snapshotCheckBox;
 
 	private JPanel pane;
 
