@@ -86,11 +86,6 @@ public class ServerInstaller {
 
 		boolean legacyLoader = loaderVersion.name.length() > 10;
 
-		if (legacyLoader && isOldGuava(gameVersion)) {
-			loaderVersion = new LoaderVersion("0.12.5", loaderVersion.path);
-			legacyLoader = false;
-		}
-
 		if (loaderVersion.path == null) { // loader jar unavailable, grab everything from meta
 			URL downloadUrl;
 			if (legacyLoader) {
@@ -110,8 +105,18 @@ public class ServerInstaller {
 				libraries.add(new Library(libraryJson));
 			}
 
-			for (Json libraryJson : json.at("libraries").at("server").asJsonList()) {
-				libraries.add(new Library(libraryJson));
+			if (!isOldGuava(gameVersion)) {
+				for (Json libraryJson : json.at("libraries").at("server").asJsonList()) {
+					libraries.add(new Library(libraryJson));
+				}
+			}
+
+			if (isOldGuava(gameVersion) && legacyLoader) {
+				libraries.add(new Library(
+						"dev.blucobalt:mcguava:0.07",
+						"https://repo.blucobalt.dev/repository/maven-hosted/",
+						null
+				));
 			}
 
 			if (isOldGuava(gameVersion)) {

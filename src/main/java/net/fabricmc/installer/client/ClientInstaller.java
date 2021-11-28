@@ -16,21 +16,17 @@
 
 package net.fabricmc.installer.client;
 
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.Objects;
 
 import mjson.Json;
 
 import net.fabricmc.installer.LoaderVersion;
 import net.fabricmc.installer.util.InstallerProgress;
-import net.fabricmc.installer.util.Library;
 import net.fabricmc.installer.util.Reference;
 import net.fabricmc.installer.util.Utils;
 
@@ -91,7 +87,7 @@ public class ClientInstaller {
 			);
 		}
 
-		if (!Objects.equals(gameVersion, "1.13.2") && !Objects.equals(gameVersion, "1.12.2")) {
+		if (Objects.equals(gameVersion, "1.6.4")) {
 			libraries.add(
 					Json.object()
 							.set("name", "org.apache.logging.log4j:log4j-api:2.8.1")

@@ -81,12 +81,15 @@ public class MetaHandler extends CompletableHandler<List<MetaHandler.GameVersion
 		boolean stable;
 
 		public GameVersion(Json json) {
+			boolean stable = true;
 			if (json.has("loader")) {
+				System.out.println(json.toString());
 				json = json.at("loader");
+				if (json.at("name").asString().contains("1.8.9")) stable = false;
 			}
 
 			version = json.at("version").asString();
-			stable = json.at("stable").asBoolean();
+			this.stable = stable ? json.at("stable").asBoolean() : stable;
 		}
 
 		public String getVersion() {
