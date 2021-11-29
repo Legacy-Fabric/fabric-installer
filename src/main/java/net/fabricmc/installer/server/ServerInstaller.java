@@ -53,7 +53,6 @@ import mjson.Json;
 import net.fabricmc.installer.LoaderVersion;
 import net.fabricmc.installer.util.InstallerProgress;
 import net.fabricmc.installer.util.Library;
-import net.fabricmc.installer.util.Reference;
 import net.fabricmc.installer.util.Utils;
 
 public class ServerInstaller {
@@ -90,6 +89,7 @@ public class ServerInstaller {
 
 		if (loaderVersion.path == null) { // loader jar unavailable, grab everything from meta
 			URL downloadUrl;
+
 			if (legacyLoader) {
 				downloadUrl = new URL(String.format("https://maven.legacyfabric.net/net/fabricmc/fabric-loader-1.8.9/%s/fabric-loader-1.8.9-%s.json", loaderVersion.name, loaderVersion.name));
 			} else {

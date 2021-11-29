@@ -58,10 +58,13 @@ public class ClientInstaller {
 
 		boolean legacyLoader = loaderVersion.name.length() > 10;
 
-//		URL profileUrl = new URL(Reference.getMetaServerEndpoint(String.format("v2/versions/loader/%s/%s/profile/json", gameVersion, loaderVersion.name)));
-//		Utils.downloadFile(profileUrl, profileJson);
+		/*
+		URL profileUrl = new URL(Reference.getMetaServerEndpoint(String.format("v2/versions/loader/%s/%s/profile/json", gameVersion, loaderVersion.name)));
+		Utils.downloadFile(profileUrl, profileJson);
+		*/
 
 		URL downloadUrl;
+
 		if (legacyLoader) {
 			downloadUrl = new URL(String.format("https://maven.legacyfabric.net/net/fabricmc/fabric-loader-1.8.9/%s/fabric-loader-1.8.9-%s.json", loaderVersion.name, loaderVersion.name));
 		} else {
@@ -118,7 +121,6 @@ public class ClientInstaller {
 		FileWriter writer = new FileWriter(profileJson.toFile());
 		writer.write(versionJson.toString());
 		writer.close();
-
 
 		progress.updateProgress(Utils.BUNDLE.getString("progress.done"));
 
