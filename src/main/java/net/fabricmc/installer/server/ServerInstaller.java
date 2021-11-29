@@ -68,7 +68,7 @@ public class ServerInstaller {
 	}
 
 	private static boolean isOldGuava(String mcVersion) {
-		return Objects.equals(mcVersion, "1.6.4") || Objects.equals(mcVersion, "1.7.10") || Objects.equals(mcVersion, "1.8.9");
+		return !(-1 < Utils.compareVersions("1.8.9", mcVersion));
 	}
 
 	public static void install(Path dir, LoaderVersion loaderVersion, String gameVersion, InstallerProgress progress, Path launchJar) throws IOException {

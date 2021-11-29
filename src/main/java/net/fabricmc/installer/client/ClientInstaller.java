@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Objects;
 
 import mjson.Json;
 
@@ -90,7 +89,7 @@ public class ClientInstaller {
 			);
 		}
 
-		if (Objects.equals(gameVersion, "1.6.4")) {
+		if (Utils.compareVersions(gameVersion, "1.6.4") <= 0) {
 			libraries.add(
 					Json.object()
 							.set("name", "org.apache.logging.log4j:log4j-api:2.8.1")

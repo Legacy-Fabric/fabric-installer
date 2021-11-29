@@ -94,6 +94,7 @@ public abstract class Handler implements InstallerProgress {
 
 		Main.GAME_VERSION_META.onComplete(versions -> {
 			updateGameVersions();
+			updateLoaderVersions();
 		});
 
 		addRow(pane, jPanel -> {
@@ -150,8 +151,6 @@ public abstract class Handler implements InstallerProgress {
 			statusLabel.setText(Utils.BUNDLE.getString("prompt.ready.install"));
 		});
 
-		this.updateLoaderVersions();
-
 		return pane;
 	}
 
@@ -178,7 +177,7 @@ public abstract class Handler implements InstallerProgress {
 			gameVersionComboBox.addItem(version.getVersion());
 		}
 
-		gameVersionComboBox.setSelectedIndex(0);
+		gameVersionComboBox.setSelectedIndex(2); // Select 1.8.9 by default
 	}
 
 	protected LoaderVersion queryLoaderVersion() {
@@ -274,12 +273,12 @@ public abstract class Handler implements InstallerProgress {
 		});
 	}
 
-	protected String getLoaderVersion(ArgumentParser args) {
+	protected String getLoaderVersion(ArgumentParser args, String gameVersion) {
 		return args.getOrDefault("loader", () -> {
 			System.out.println("Using latest loader version");
 
 			try {
-				Main.LOADER_META.load();
+				Main.LOADER_META.load(gameVersion);
 			} catch (IOException e) {
 				throw new RuntimeException("Failed to load latest versions", e);
 			}

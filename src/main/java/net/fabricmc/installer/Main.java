@@ -66,7 +66,7 @@ public class Main {
 			HANDLERS.forEach(handler -> System.out.printf("%s %s\n", handler.name().toLowerCase(), handler.cliHelp()));
 
 			GAME_VERSION_META.load();
-			LOADER_META.load();
+			LOADER_META.load("1.8.9");
 
 			System.out.printf("\nLatest Version: %s\nLatest Loader: %s\n", Main.GAME_VERSION_META.getLatestVersion(false), Main.LOADER_META.getLatestVersion(false));
 		} else {

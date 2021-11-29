@@ -175,7 +175,7 @@ public class ClientHandler extends Handler {
 		}
 
 		String gameVersion = getGameVersion(args);
-		LoaderVersion loaderVersion = new LoaderVersion(getLoaderVersion(args));
+		LoaderVersion loaderVersion = new LoaderVersion(getLoaderVersion(args, gameVersion));
 
 		String profileName = ClientInstaller.install(path, gameVersion, loaderVersion, InstallerProgress.CONSOLE);
 

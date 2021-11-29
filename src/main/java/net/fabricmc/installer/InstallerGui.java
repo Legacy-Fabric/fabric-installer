@@ -46,7 +46,7 @@ public class InstallerGui extends JFrame {
 		setIconImage(Toolkit.getDefaultToolkit().getImage(ClassLoader.getSystemClassLoader().getResource("icon.png")));
 
 		Main.GAME_VERSION_META.load();
-		Main.LOADER_META.load();
+		Main.LOADER_META.load("1.8.9");
 	}
 
 	public static void selectInstallLocation(Supplier<String> initalDir, Consumer<String> selectedDir) {
