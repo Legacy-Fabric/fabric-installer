@@ -83,7 +83,6 @@ public class MetaHandler extends CompletableHandler<List<MetaHandler.GameVersion
 		public GameVersion(Json json) {
 			boolean stable = true;
 			if (json.has("loader")) {
-				System.out.println(json.toString());
 				json = json.at("loader");
 				if (json.at("name").asString().contains("1.8.9")) stable = false;
 			}

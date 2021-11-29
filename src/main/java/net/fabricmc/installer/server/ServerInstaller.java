@@ -72,6 +72,10 @@ public class ServerInstaller {
 	}
 
 	public static void install(Path dir, LoaderVersion loaderVersion, String gameVersion, InstallerProgress progress, Path launchJar) throws IOException {
+		boolean legacyLoader = loaderVersion.name.length() > 10;
+
+		if (Objects.equals(gameVersion, "1.8.9") && legacyLoader) throw new IOException("1.8.9 server is incompatible with version 0.11.x and older, please use 0.12 and newer!");
+
 		progress.updateProgress(new MessageFormat(Utils.BUNDLE.getString("progress.installing.server")).format(new Object[]{String.format("%s(%s)", loaderVersion.name, gameVersion)}));
 
 		Files.createDirectories(dir);
@@ -83,8 +87,6 @@ public class ServerInstaller {
 
 		List<Library> libraries = new ArrayList<>();
 		String mainClassMeta;
-
-		boolean legacyLoader = loaderVersion.name.length() > 10;
 
 		if (loaderVersion.path == null) { // loader jar unavailable, grab everything from meta
 			URL downloadUrl;
