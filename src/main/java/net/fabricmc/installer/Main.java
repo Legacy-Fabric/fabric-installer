@@ -41,6 +41,8 @@ public class Main {
 			System.setProperty("javax.net.ssl.trustStoreType", "WINDOWS-ROOT");
 		}
 
+		System.setProperty("java.net.useSystemProxies", "true");
+
 		System.out.println("Loading Legacy Fabric Installer: " + Main.class.getPackage().getImplementationVersion());
 
 		HANDLERS.add(new ClientHandler());
@@ -50,15 +52,15 @@ public class Main {
 		String command = argumentParser.getCommand().orElse(null);
 
 		//Can be used if you wish to re-host or provide custom versions. Ensure you include the trailing /
-		String metaUrl = argumentParser.has("metaurl") ? argumentParser.get("metaurl") : null;
-		String mavenUrl = argumentParser.has("mavenurl") ? argumentParser.get("mavenurl") : null;
+		String metaUrl = argumentParser.get("metaurl");
+		String mavenUrl = argumentParser.get("mavenurl");
 
 		if (metaUrl != null || mavenUrl != null) {
 			FabricService.setFixed(metaUrl, mavenUrl);
 		}
 
-		GAME_VERSION_META = new MetaHandler("v2/versions/game");
-		LOADER_META = new MetaHandler("v2/versions/loader");
+		GAME_VERSION_META = new MetaHandler("game", "v2/versions/game");
+		LOADER_META = new MetaHandler("loader", "v2/versions/loader");
 
 		//Default to the help command in a headless environment
 		if (GraphicsEnvironment.isHeadless() && command == null) {

@@ -8,7 +8,7 @@ plugins {
 	id "me.modmuss50.remotesign" version "0.4.0"
 }
 
-version = '1.0.1'
+version = '1.1.0'
 
 def ENV = System.getenv()
 version = version + (ENV.GITHUB_ACTIONS ? "" : "+local")
@@ -98,9 +98,24 @@ tasks.register('downloadBootstrap', Download) {
 	overwrite false
 }
 
+remoteSign {
+	requestUrl = ENV.SIGNING_SERVER
+	pgpAuthKey = ENV.SIGNING_PGP_KEY
+	jarAuthKey = ENV.SIGNING_JAR_KEY
+
+	useDummyForTesting = !providers.environmentVariable("SIGNING_SERVER").present
+
+	sign (shadowJar)
+
+	afterEvaluate {
+		sign publishing.publications.maven
+	}
+}
+
 tasks.register('nativeExe', FileOutput) {
 	dependsOn shadowJar
 	dependsOn downloadBootstrap
+	dependsOn signShadowJar
 	output = file("${projectDir}/build/libs/${base.archivesName.get()}-${project.version}.exe")
 	outputs.upToDateWhen { false }
 
@@ -112,11 +127,7 @@ tasks.register('nativeExe', FileOutput) {
 		output.createNewFile()
 		output.setBytes downloadBootstrap.outputFiles.first().readBytes()
 
-		if (ENV.SIGNING_SERVER) {
-			output.append signShadowJar.archiveFile.get().getAsFile().readBytes()
-		} else {
-			output.append shadowJar.archiveFile.get().getAsFile().readBytes()
-		}
+		output.append signShadowJar.output.get().getAsFile().readBytes()
 	}
 }
 build.dependsOn nativeExe
@@ -127,22 +138,6 @@ jar {
 	manifest {
 		attributes('Enable-Native-Access': 'ALL-UNNAMED')
 	}
-}
-
-if (ENV.SIGNING_SERVER) {
-	remoteSign {
-		requestUrl = ENV.SIGNING_SERVER
-		pgpAuthKey = ENV.SIGNING_PGP_KEY
-		jarAuthKey = ENV.SIGNING_JAR_KEY
-
-		sign (shadowJar)
-
-		afterEvaluate {
-			sign publishing.publications.maven
-		}
-	}
-
-	nativeExe.dependsOn signShadowJar
 }
 
 spotless {
@@ -158,17 +153,14 @@ publishing {
 			artifactId base.archivesName.get()
 			version project.version
 
-			if (ENV.SIGNING_SERVER) {
-				artifact (signShadowJar) {
-					classifier null
-				}
-			} else {
-				artifact (shadowJar) {
-					classifier null
-				}
+			artifact (signShadowJar.output) {
+				classifier null
+				builtBy shadowJar
 			}
 
-			artifact nativeExe.output
+			artifact (nativeExe.output) {
+				builtBy nativeExe
+			}
 
 			// No point in signing as it is designed to get modified
 			artifact (serverJar) {
