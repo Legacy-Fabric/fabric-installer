@@ -117,6 +117,8 @@ public class ServerInstaller {
 
 			if (library.inputPath == null) {
 				progress.updateProgress(new MessageFormat(Utils.BUNDLE.getString("progress.download.library.entry")).format(new Object[]{library.name}));
+
+				if (library.getURL() == null || library.name.contains("lwjgl")) continue;
 				FabricService.downloadSubstitutedMaven(library.getURL(), libraryFile);
 			} else {
 				Files.createDirectories(libraryFile.getParent());

@@ -34,11 +34,13 @@ public class Library {
 
 	public Library(Json json) {
 		name = json.at("name").asString();
-		url = json.at("url").asString();
+		url = json.has("url") ? json.at("url").asString() : null;
 		inputPath = null;
 	}
 
 	public String getURL() {
+		if (url == null) return null;
+
 		String path;
 		String[] parts = this.name.split(":", 3);
 		path = parts[0].replace(".", "/") + "/" + parts[1] + "/" + parts[2] + "/" + parts[1] + "-" + parts[2] + ".jar";

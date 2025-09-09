@@ -62,6 +62,8 @@ public class ClientInstaller {
 			Path libraryFile = libsDir.resolve(library.getPath());
 			String url = library.getURL();
 
+			if (url == null || libraryJson.has("natives")) continue;
+
 			//System.out.println("Downloading "+url+" to "+libraryFile);
 			progress.updateProgress(new MessageFormat(Utils.BUNDLE.getString("progress.download.library.entry")).format(new Object[]{library.name}));
 			FabricService.downloadSubstitutedMaven(url, libraryFile);
