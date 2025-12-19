@@ -75,7 +75,8 @@ tasks.register('serverJar', ShadowJar) {
 	manifest {
 		attributes 'Implementation-Title': 'FabricInstaller',
 			'Implementation-Version': project.version,
-			'Main-Class': 'net.fabricmc.installer.ServerLauncher'
+			'Main-Class': 'net.fabricmc.installer.ServerLauncher',
+			'Enable-Native-Access': 'ALL-UNNAMED'
 	}
 
 	minimize()
