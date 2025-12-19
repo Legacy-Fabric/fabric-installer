@@ -90,7 +90,7 @@ tasks.register('serverJar', ShadowJar) {
 }
 assemble.dependsOn serverJar
 
-def bootstrapVersion = "0.5.2"
+def bootstrapVersion = "0.6.0"
 def bootstrapArch = "i686"
 
 tasks.register('downloadBootstrap', Download) {
